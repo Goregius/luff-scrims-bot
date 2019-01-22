@@ -11,6 +11,7 @@ from sheets import google_io
 
 team_size = 6
 
+
 def setup(bot):
     bot.add_cog(Teammaker(bot))
 
@@ -119,17 +120,21 @@ class Teammaker:
                     while vote == player:
                         vote = random.choice(tuple(self.game.players))
                     votes[player] = vote
-                    msg += "Random vote added for {} from {}.\n".format(vote.display_name, player.display_name)
+                    msg += "Random vote added for {} from {}.\n".format(
+                        vote.display_name, player.display_name)
             await self.bot.say(msg)
 
         vote_nums = {}
         for vote in votes.values():
             vote_nums[vote] = vote_nums.get(vote, 0) + 1
-        sorted_vote_nums = sorted(vote_nums.items(), key=operator.itemgetter(1), reverse=True)
-        top_votes = [key for key, value in sorted_vote_nums if value == sorted_vote_nums[0][1]]
+        sorted_vote_nums = sorted(
+            vote_nums.items(), key=operator.itemgetter(1), reverse=True)
+        top_votes = [
+            key for key, value in sorted_vote_nums if value == sorted_vote_nums[0][1]]
         if len(top_votes) < 2:
             self.game.captains = top_votes
-            secondary_votes = [key for key, value in sorted_vote_nums if value == sorted_vote_nums[1][1]]
+            secondary_votes = [
+                key for key, value in sorted_vote_nums if value == sorted_vote_nums[1][1]]
             if len(secondary_votes) > 1:
                 await self.bot.say("{:d}-way tie for 2nd captain. Shuffling picks...".format(len(secondary_votes)))
                 random.shuffle(secondary_votes)
@@ -281,6 +286,7 @@ class Teammaker:
 
         blue = list(map(lambda author: author.name, self.game.blue))
         orange = list(map(lambda author: author.name, self.game.orange))
+
         record = []
         if ctx.message.author in self.game.blue:
             record = blue + [score1, score2] + orange
@@ -289,6 +295,14 @@ class Teammaker:
         else:
             await self.bot.say("You were not in a team.")
             return
+
+        try:
+            google_io.addRecord(record)
+            await self.bot.say("{} reported the score as: {}".format(ctx.message.author.mention, ', '.join(record)))
+            self.game = None
+        except:
+            await self.bot.say("Error adding the score to the sheets!")
+
 
 class Game:
     def __init__(self, players):
