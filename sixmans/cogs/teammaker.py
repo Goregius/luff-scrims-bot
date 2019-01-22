@@ -279,8 +279,8 @@ class Teammaker:
             await self.bot.say("There is no game to report.")
             return
         
-        blue = list(map(lambda author: author.name, self.game.blue))
-        orange = list(map(lambda author: author.name, self.game.orange))
+        blue = [author.name for author in self.game.blue]
+        orange = [author.name for author in self.game.orange]
 
         record = []
         if ctx.message.author in self.game.orange:
