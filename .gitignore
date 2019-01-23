@@ -107,3 +107,4 @@ venv.bak/
 config.ini
 
 gg.py
+credentials.json

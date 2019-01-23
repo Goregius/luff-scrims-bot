@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 from sheets import google_io
-
+import copy
 team_size = 6
 
 def setup(bot):
@@ -40,10 +40,20 @@ class Teammaker:
             return
 
         self.queue.put(player)
-
+        
+        # for i in range(1, 6):
+        #     player2 = copy.deepcopy(player)
+        #     player2.id = "1405658118898319" + str(i)
+        #     player2.name = "Goregius " + str(i)
+        #     self.queue.put(player2)
+        #     print(player2.id)
+        # print(self.queue_full())
+        # if self.queue_full():
+        #     print("full")
+        
         await self.bot.say("{} added to queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
         if self.queue_full():
-            self.bot.say("Queue is now full! Type {prefix}captains or {prefix}random to create a game.".format(
+            await self.bot.say("Queue is now full! Type {prefix}captains or {prefix}random to create a game.".format(
                 prefix=self.bot.command_prefix))
 
     @commands.command(pass_context=True, name="dequeue", aliases=["dq"], description="Remove yourself from the queue")
@@ -281,19 +291,20 @@ class Teammaker:
         
         blue = [author.name for author in self.game.blue]
         orange = [author.name for author in self.game.orange]
-
+        score1_int = int(score1)
+        score2_int = int(score2)
         record = []
-        if ctx.message.author in self.game.orange:
-            record = blue + [max(score1, score2), min(score1, score2)] + orange
-        elif ctx.message.author in self.game.blue:
-            record = blue + [min(score1, score2), max(score1, score2)] + orange
+        if ctx.message.author in self.game.blue:
+            record = blue + [max(score1_int, score2_int), min(score1_int, score2_int)] + orange if score1_int > score2_int else blue + [min(score1_int, score2_int), max(score1_int, score2_int)] + orange
+        elif ctx.message.author in self.game.orange:
+            record = blue + [min(score1_int, score2_int), max(score1_int, score2_int)] + orange if score1_int > score2_int else blue + [max(score1_int, score2_int), min(score1_int, score2_int)] + orange
         else:
             await self.bot.say("You were not in a team.")
             return
         
         try:
             google_io.addRecord(record)
-            await self.bot.say("{} reported the score as: {}".format(ctx.message.author.mention, ', '.join(record)))
+            await self.bot.say("{} reported the score as: {}".format(ctx.message.author.mention, ', '.join([str(field) for field in record])))
             self.game = None
         except:
             await self.bot.say("Error adding the score to the sheets!")

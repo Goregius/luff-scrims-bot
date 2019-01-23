@@ -7,6 +7,10 @@ discord_grp = "DISCORD"
 token_key = "Token"
 prefix_key = "CommandPrefix"
 
+sheets_grp = "SHEETS"
+sheets_id = "id"
+sheets_worksheet = "worksheet"
+
 six_mans_grp = "SIX_MANS"
 use_captains_key = "UseCaptains"
 
@@ -38,3 +42,11 @@ class Config:
     @property
     def discord_prefix(self):
         return self.config[discord_grp][prefix_key]
+    
+    @property
+    def sheets_id(self):
+        return self.config[sheets_grp][sheets_id]
+
+    @property
+    def sheets_worksheet(self):
+        return self.config[sheets_grp][sheets_worksheet]
