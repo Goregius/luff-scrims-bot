@@ -41,15 +41,15 @@ class Teammaker:
 
         self.queue.put(player)
         
-        # for i in range(1, 6):
-        #     player2 = copy.deepcopy(player)
-        #     player2.id = "1405658118898319" + str(i)
-        #     player2.name = "Goregius " + str(i)
-        #     self.queue.put(player2)
-        #     print(player2.id)
-        # print(self.queue_full())
-        # if self.queue_full():
-        #     print("full")
+        for i in range(1, 6):
+            player2 = copy.deepcopy(player)
+            player2.id = "1405658118898319" + str(i)
+            player2.name = "Goregius " + str(i)
+            self.queue.put(player2)
+            print(player2.id)
+        print(self.queue_full())
+        if self.queue_full():
+            print("full")
         
         await self.bot.say("{} added to queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
         if self.queue_full():
@@ -308,6 +308,11 @@ class Teammaker:
             self.game = None
         except:
             await self.bot.say("Error adding the score to the sheets!")
+    
+    @commands.command(pass_context=True, description="Reports score of current match", aliases=["s", "S"])
+    async def status(self, ctx):
+        players = list(self.queue.queue)
+        await self.bot.say(', '.join(player.name for player in players))
         
 
 class Game:
