@@ -1,4 +1,7 @@
 [DISCORD]
 token = 
 commandprefix = !
+[SHEETS]
+id = 
+worksheet = 
 
