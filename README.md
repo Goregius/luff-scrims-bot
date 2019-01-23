@@ -20,8 +20,10 @@
 
 1. Clone the repository (```git clone https://github.com/Goregius/luff-scrims-bot```)
 2. Install requirements (```pip install -r requirements.txt```)
-3. Enter your bot's token in sixmans/config/config.ini (<a href="https://discordapp.com/developers/applications/me">Create bot here</a>)
-4. Run sixmans/bot.py
+3. Copy config.ini.example to config.ini in sixmans/config/
+4. Enter your bot's token in the config.ini (<a href="https://discordapp.com/developers/applications/me">Create bot here</a>), and the id and worksheet of your Google Sheet.
+5. Add a file called "credentials.json" in the root directory and add your Google API credientials (Service account key with Drive access) in there.
+5. Run sixmans/bot.py
 
 ## Usage
 
@@ -60,12 +62,3 @@ TEAMMAKING
 ```
 
 ---
-
-
-#### Contributors
-
-Jake Cheek - [@jgchk](https://github.com/jgchk)
-
-#### License
-
-MIT

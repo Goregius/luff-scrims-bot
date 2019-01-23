@@ -304,7 +304,7 @@ class Teammaker:
         
         try:
             google_io.addRecord(record)
-            await self.bot.say("{} reported the score as: {}".format(ctx.message.author.mention, ', '.join([str(field) for field in record])))
+            await self.bot.say("{} reported the score as: {} | {} - {} | {}".format(ctx.message.author.mention, ', '.join([str(field) for field in blue], score1, score2, [str(field) for field in orange])))
             self.game = None
         except:
             await self.bot.say("Error adding the score to the sheets!")
