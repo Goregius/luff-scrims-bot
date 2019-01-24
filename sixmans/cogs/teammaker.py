@@ -8,8 +8,14 @@ import discord
 from discord.ext import commands
 
 from sheets import google_io
+from config.config import Config
 import copy
+
+config = Config()
+if not config.discord_mentionrole:
+    print("Please set a sheets id in config.ini")
 team_size = 6
+
 
 def setup(bot):
     bot.add_cog(Teammaker(bot))
@@ -40,30 +46,42 @@ class Teammaker:
             return
 
         self.queue.put(player)
-        
-        # for i in range(1, 6):
-        #     player2 = copy.deepcopy(player)
-        #     player2.id = "1405658118898319" + str(i)
-        #     player2.name = "Goregius " + str(i)
-        #     self.queue.put(player2)
-        #     print(player2.id)
-        # print(self.queue_full())
-        # if self.queue_full():
-        #     print("full")
-        
-        await self.bot.say("{} added to queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
-        if self.queue_full():
-            await self.bot.say("Queue is now full! Type {prefix}captains or {prefix}random to create a game.".format(
-                prefix=self.bot.command_prefix))
 
-    @commands.command(pass_context=True, name="dequeue", aliases=["dq"], description="Remove yourself from the queue")
-    async def dq(self, ctx):
+        for i in range(1, 6):
+            player2 = copy.deepcopy(player)
+            player2.id = "1405658118898319" + str(i)
+            player2.name = "Goregius " + str(i)
+            self.queue.put(player2)
+        if self.queue_full():
+            print("full")
+
+        queue_embed = discord.Embed(colour=discord.Colour.purple())
+        queue_embed.add_field(
+            name=f"{self.queue.qsize()} players are in the queue", value=f'{player.mention} has joined.')
+        await self.bot.say(discord.utils.get(player.server.roles, name=f'{config.discord_mentionrole}').mention if self.queue.qsize() == 1 else "", embed=queue_embed)
+
+        # await self.bot.say("{} added to queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
+        if self.queue_full():
+            queue_embed = discord.Embed(colour=discord.Colour.purple())
+            queue_embed.add_field(
+                name=f"Reached {team_size} players!", value="Team creation is ready now.", inline=False)
+            queue_embed.add_field(name="Command for random teams:",
+                                  value=f'{self.bot.command_prefix}r', inline=True)
+            queue_embed.add_field(name="Command for captains:",
+                                  value=f'{self.bot.command_prefix}c', inline=True)
+            await self.bot.say(', '.join([player.mention for player in list(self.queue.queue)]), embed=queue_embed)
+            # await self.bot.say("Queue is now full! Type {prefix}captains or {prefix}random to create a game.".format(prefix=self.bot.command_prefix))
+
+    @commands.command(pass_context=True, description="Remove yourself from the queue")
+    async def leave(self, ctx):
         player = ctx.message.author
 
         if player in self.queue:
             self.queue.remove(player)
-            await self.bot.say(
-                "{} removed from queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
+            embed = discord.Embed(colour=discord.Colour.purple())
+            embed.add_field(name=f"{self.queue.qsize()} players are in the queue",
+                            value=f'{player.mention} has left (using command).')
+            await self.bot.say(embed=embed)
         else:
             await self.bot.say("{} is not in queue.".format(player.display_name))
 
@@ -129,17 +147,21 @@ class Teammaker:
                     while vote == player:
                         vote = random.choice(tuple(self.game.players))
                     votes[player] = vote
-                    msg += "Random vote added for {} from {}.\n".format(vote.display_name, player.display_name)
+                    msg += "Random vote added for {} from {}.\n".format(
+                        vote.display_name, player.display_name)
             await self.bot.say(msg)
 
         vote_nums = {}
         for vote in votes.values():
             vote_nums[vote] = vote_nums.get(vote, 0) + 1
-        sorted_vote_nums = sorted(vote_nums.items(), key=operator.itemgetter(1), reverse=True)
-        top_votes = [key for key, value in sorted_vote_nums if value == sorted_vote_nums[0][1]]
+        sorted_vote_nums = sorted(
+            vote_nums.items(), key=operator.itemgetter(1), reverse=True)
+        top_votes = [
+            key for key, value in sorted_vote_nums if value == sorted_vote_nums[0][1]]
         if len(top_votes) < 2:
             self.game.captains = top_votes
-            secondary_votes = [key for key, value in sorted_vote_nums if value == sorted_vote_nums[1][1]]
+            secondary_votes = [
+                key for key, value in sorted_vote_nums if value == sorted_vote_nums[1][1]]
             if len(secondary_votes) > 1:
                 await self.bot.say("{:d}-way tie for 2nd captain. Shuffling picks...".format(len(secondary_votes)))
                 random.shuffle(secondary_votes)
@@ -168,7 +190,7 @@ class Teammaker:
             return False
         return True
 
-    @commands.command(description="Start a game by randomly choosing captains")
+    @commands.command(description="Start a game by randomly choosing captains", aliases="c")
     async def captains(self):
         if not self.queue_full():
             await self.bot.say("Queue is not full.")
@@ -288,7 +310,7 @@ class Teammaker:
         if self.game is None:
             await self.bot.say("There is no game to report.")
             return
-        
+
         blue = [author.name for author in self.game.blue]
         orange = [author.name for author in self.game.orange]
         record = []
@@ -296,13 +318,17 @@ class Teammaker:
         sorted_scores.sort(reverse=True)
 
         if ctx.message.author in self.game.blue:
-            record = blue + sorted_scores + orange if sorted_scores[0] > sorted_scores[1] else orange + sorted_scores + blue
+            record = blue + sorted_scores + \
+                orange if sorted_scores[0] > sorted_scores[1] else orange + \
+                sorted_scores + blue
         elif ctx.message.author in self.game.orange:
-            record = orange + sorted_scores + blue if sorted_scores[0] > sorted_scores[1] else blue + sorted_scores + orange
+            record = orange + sorted_scores + \
+                blue if sorted_scores[0] > sorted_scores[1] else blue + \
+                sorted_scores + orange
         else:
             await self.bot.say("You were not in a team.")
             return
-        
+
         try:
             google_io.addRecord(record)
             await self.bot.say("{} reported the score as: {} | {} - {} | {}".format(ctx.message.author.mention, ', '.join([str(field) for field in blue]), score1, score2, ', '.join([str(field) for field in orange])))
@@ -310,12 +336,16 @@ class Teammaker:
             await self.bot.say("Error adding the score to the sheets!")
 
         self.game = None
-    
+
     @commands.command(pass_context=True, description="Reports score of current match", aliases=["s", "S"])
     async def status(self, ctx):
         players = list(self.queue.queue)
-        await self.bot.say(', '.join(player.name for player in players))
-        
+        embed = discord.Embed(title="6Mans Status",
+                              colour=discord.Colour.purple())
+        embed.add_field(name="Players in queue", value=', '.join(
+            player.mention for player in players) if len(players) > 0 else "None")
+        await self.bot.say(embed=embed)
+
 
 class Game:
     def __init__(self, players):
