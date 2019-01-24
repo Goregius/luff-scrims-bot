@@ -291,23 +291,25 @@ class Teammaker:
         
         blue = [author.name for author in self.game.blue]
         orange = [author.name for author in self.game.orange]
-        score1_int = int(score1)
-        score2_int = int(score2)
         record = []
+        sorted_scores = [int(score1), int(score2)]
+        sorted_scores.sort(reverse=True)
+
         if ctx.message.author in self.game.blue:
-            record = blue + [max(score1_int, score2_int), min(score1_int, score2_int)] + orange if score1_int > score2_int else blue + [min(score1_int, score2_int), max(score1_int, score2_int)] + orange
+            record = blue + sorted_scores + orange if sorted_scores[0] > sorted_scores[1] else orange + sorted_scores + blue
         elif ctx.message.author in self.game.orange:
-            record = blue + [min(score1_int, score2_int), max(score1_int, score2_int)] + orange if score1_int > score2_int else blue + [max(score1_int, score2_int), min(score1_int, score2_int)] + orange
+            record = orange + sorted_scores + blue if sorted_scores[0] > sorted_scores[1] else blue + sorted_scores + orange
         else:
             await self.bot.say("You were not in a team.")
             return
         
         try:
             google_io.addRecord(record)
-            await self.bot.say("{} reported the score as: {} | {} - {} | {}".format(ctx.message.author.mention, ', '.join([str(field) for field in blue], score1, score2, [str(field) for field in orange])))
-            self.game = None
+            await self.bot.say("{} reported the score as: {} | {} - {} | {}".format(ctx.message.author.mention, ', '.join([str(field) for field in blue]), score1, score2, ', '.join([str(field) for field in orange])))
         except:
             await self.bot.say("Error adding the score to the sheets!")
+
+        self.game = None
     
     @commands.command(pass_context=True, description="Reports score of current match", aliases=["s", "S"])
     async def status(self, ctx):
