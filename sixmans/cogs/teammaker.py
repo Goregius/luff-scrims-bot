@@ -90,12 +90,12 @@ class Teammaker:
         else:
             await self.bot.say("{} is not in queue.".format(player.display_name))
 
-    @commands.command(description="Remove someone else from the queue")
-    async def kick(self, player: discord.Member):
+    @commands.command(pass_context=True, description="Remove someone else from the queue")
+    async def kick(self, ctx, player: discord.Member):
         if player in self.queue:
             self.queue.remove(player)
             embed = discord.Embed(colour=discord.Colour.purple())
-            embed.add_field(name=f"{self.queue.qsize()} players are in the queue", value=f'{player.mention} has been kicked (using command).')
+            embed.add_field(name=f"{self.queue.qsize()} players are in the queue", value=f'{player.mention} has been kicked by {ctx.message.author.mention} (using command).')
             await self.bot.say(embed=embed)
         else:
             await self.bot.say("{} is not in queue.".format(player.display_name))
