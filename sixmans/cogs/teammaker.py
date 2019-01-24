@@ -58,7 +58,12 @@ class Teammaker:
         queue_embed = discord.Embed(colour=discord.Colour.purple())
         queue_embed.add_field(
             name=f"{self.queue.qsize()} players are in the queue", value=f'{player.mention} has joined.')
-        await self.bot.say(discord.utils.get(player.server.roles, name=f'{config.discord_mentionrole}').mention if self.queue.qsize() == 1 else "", embed=queue_embed)
+        try:
+            await self.bot.say(discord.utils.get(player.server.roles, name=f'{config.discord_mentionrole}').mention if self.queue.qsize() == 1 else "", embed=queue_embed)
+        except:
+            print(f"Error with config.discord_mentionrole ({config.discord_mentionrole}) in config.exe")
+            await self.bot.say(embed=queue_embed)
+        
 
         # await self.bot.say("{} added to queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
         if self.queue_full():
@@ -89,8 +94,9 @@ class Teammaker:
     async def kick(self, player: discord.Member):
         if player in self.queue:
             self.queue.remove(player)
-            await self.bot.say(
-                "{} removed from queue. ({:d}/{:d})".format(player.display_name, self.queue.qsize(), team_size))
+            embed = discord.Embed(colour=discord.Colour.purple())
+            embed.add_field(name=f"{self.queue.qsize()} players are in the queue", value=f'{player.mention} has been kicked (using command).')
+            await self.bot.say(embed=embed)
         else:
             await self.bot.say("{} is not in queue.".format(player.display_name))
 
@@ -268,7 +274,7 @@ class Teammaker:
                 "Timed out. Randomly picked {} and {} for 🔷 BLUE 🔷 team.".format(*[pick.mention for pick in picks]))
             return picks
 
-    @commands.command(description="Start a game by randomly assigning teams")
+    @commands.command(description="Start a game by randomly assigning teams", aliases=["r"])
     async def random(self):
         if not self.queue_full():
             await self.bot.say("Queue is not full.")
@@ -300,13 +306,13 @@ class Teammaker:
         self.game = Game(players)
 
     @commands.command(pass_context=True, description="Reports score of current match")
-    async def report(self, ctx, score1, score2):
-        if not score1.isdigit():
-            await self.bot.say("The first score entered isn't a valid score.")
-            return
-        if not score2.isdigit():
-            await self.bot.say("The second score entered isn't a valid score.")
-            return
+    async def report(self, ctx, score1: int, score2: int):
+        # if not score1.isdigit():
+        #     await self.bot.say("The first score entered isn't a valid score.")
+        #     return
+        # if not score2.isdigit():
+        #     await self.bot.say("The second score entered isn't a valid score.")
+        #     return
         if self.game is None:
             await self.bot.say("There is no game to report.")
             return
@@ -314,24 +320,23 @@ class Teammaker:
         blue = [author.name for author in self.game.blue]
         orange = [author.name for author in self.game.orange]
         record = []
-        sorted_scores = [int(score1), int(score2)]
+        sorted_scores = [score1, score2]
         sorted_scores.sort(reverse=True)
-
+        print(sorted_scores)
         if ctx.message.author in self.game.blue:
-            record = blue + sorted_scores + \
-                orange if sorted_scores[0] > sorted_scores[1] else orange + \
-                sorted_scores + blue
+            record = blue + sorted_scores + orange if sorted_scores[0] > sorted_scores[1] else orange + sorted_scores + blue
         elif ctx.message.author in self.game.orange:
-            record = orange + sorted_scores + \
-                blue if sorted_scores[0] > sorted_scores[1] else blue + \
-                sorted_scores + orange
+            record = orange + sorted_scores + blue if sorted_scores[0] > sorted_scores[1] else blue + sorted_scores + orange
+            print(sorted_scores[0] > sorted_scores[1], orange + sorted_scores + \
+                blue, blue + \
+                sorted_scores + orange, blue, orange)
         else:
             await self.bot.say("You were not in a team.")
             return
 
         try:
             google_io.addRecord(record)
-            await self.bot.say("{} reported the score as: {} | {} - {} | {}".format(ctx.message.author.mention, ', '.join([str(field) for field in blue]), score1, score2, ', '.join([str(field) for field in orange])))
+            await self.bot.say("{} reported the score as: {} | {} - {} | {}".format(ctx.message.author.mention, ', '.join(record[:3]), score1, score2, ', '.join(record[5:])))
         except:
             await self.bot.say("Error adding the score to the sheets!")
 

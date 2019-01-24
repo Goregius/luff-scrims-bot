@@ -18,4 +18,7 @@ class ExtraCommands:
 
     @commands.command(description="Says hello", aliases=["hi", "hey", "howdy", "bonjour", "hola", "hallo", "ciao", "namaste", "salaam", "zdras-tvuy-te", "konnichiwa"], pass_context=True)
     async def hello(self, ctx):
-        await self.bot.say('Hello '+ ctx.message.author.mention)
+        greeting = 'Hello '
+        if (ctx.message.author.name == "tdb"):
+            greeting = 'Get lost '
+        await self.bot.say(greeting + ctx.message.author.mention)
