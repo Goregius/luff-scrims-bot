@@ -47,13 +47,13 @@ class Teammaker:
 
         self.queue.put(player)
 
-        for i in range(1, 6):
-            player2 = copy.deepcopy(player)
-            player2.id = "1405658118898319" + str(i)
-            player2.name = "Goregius " + str(i)
-            self.queue.put(player2)
-        if self.queue_full():
-            print("full")
+        # for i in range(1, 6):
+        #     player2 = copy.deepcopy(player)
+        #     player2.id = "1405658118898319" + str(i)
+        #     player2.name = "Goregius " + str(i)
+        #     self.queue.put(player2)
+        # if self.queue_full():
+        #     print("full")
 
         queue_embed = discord.Embed(colour=discord.Colour.purple())
         queue_embed.add_field(
