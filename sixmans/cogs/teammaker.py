@@ -77,7 +77,7 @@ class Teammaker:
             await self.bot.say(', '.join([player.mention for player in list(self.queue.queue)]), embed=queue_embed)
             # await self.bot.say("Queue is now full! Type {prefix}captains or {prefix}random to create a game.".format(prefix=self.bot.command_prefix))
 
-    @commands.command(pass_context=True, description="Remove yourself from the queue")
+    @commands.command(pass_context=True, description="Remove yourself from the queue", aliases=["l"])
     async def leave(self, ctx):
         player = ctx.message.author
 

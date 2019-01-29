@@ -9,7 +9,7 @@ logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-extensions = ["cogs.teammaker", "cogs.extra_commands"]
+extensions = ["cogs.teammaker", "cogs.extra_commands"]#, "cogs.music"]
 
 
 class Bot(commands.Bot):
