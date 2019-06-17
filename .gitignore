@@ -108,3 +108,5 @@ config.ini
 
 gg.py
 credentials.json
+
+settings.json

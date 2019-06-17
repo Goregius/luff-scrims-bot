@@ -1,6 +1,7 @@
 [DISCORD]
 token = 
 commandprefix = !
+mentionrole = 
 [SHEETS]
 id = 
 worksheet = 
